@@ -3782,6 +3782,18 @@ Tdbcmysql_Init(
 	}
 	mysql_library_init(0, NULL, NULL);
 	mysqlClientVersion = mysql_get_client_version();
+
+	/*
+	The only use of mysqlClientVersion in this in this program is to check that
+	it is >= 50100 and select "st_mysql_bind_50" or "st_mysql_bind_51" accordingly.
+	Since MariaDb 10.6.2 the client version (a lower number) is reported.
+	https://github.com/perl5-dbi/DBD-mysql/issues/333
+	(The current MariaDb version is over 10 at the time of this writing.)
+	Set the version manually to always select "st_mysql_bind_51".
+	*/
+
+	mysqlClientVersion = 50100;
+
     }
     ++mysqlRefCount;
     Tcl_MutexUnlock(&mysqlMutex);
