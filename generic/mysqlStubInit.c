@@ -119,7 +119,7 @@ const mysqlStubDefs* mysqlStubs = &mysqlStubsTable;
  */
 
 MODULE_SCOPE Tcl_LoadHandle
-MysqlInitStubs(Tcl_Interp* interp)
+MysqlInitStubs(Tcl_Interp* interp, int *isMariaDBPtr)
 {
     int status;			/* Status of Tcl library calls */
     Tcl_Obj* path;		/* Path name of a module to be loaded */
@@ -174,5 +174,7 @@ MysqlInitStubs(Tcl_Interp* interp)
     if (status != TCL_OK) {
 	return NULL;
     }
+    /* Return, if this is MariaDB */
+    *isMariaDBPtr = (0 == strncmp("mariadb", mysqlStubLibNames[i], strlen("mariadb")));
     return handle;
 }

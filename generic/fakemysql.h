@@ -22,7 +22,7 @@
 #define MODULE_SCOPE extern
 #endif
 
-MODULE_SCOPE Tcl_LoadHandle MysqlInitStubs(Tcl_Interp*);
+MODULE_SCOPE Tcl_LoadHandle MysqlInitStubs(Tcl_Interp*, int *isMariaDBPtr);
 
 #ifdef _WIN32
 #define STDCALL __stdcall

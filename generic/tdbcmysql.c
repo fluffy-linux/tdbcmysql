@@ -3776,7 +3776,8 @@ Tdbcmysql_Init(
 
     Tcl_MutexLock(&mysqlMutex);
     if (mysqlRefCount == 0) {
-	if ((mysqlLoadHandle = MysqlInitStubs(interp)) == NULL) {
+	int isMariaDB;
+	if ((mysqlLoadHandle = MysqlInitStubs(interp, &isMariaDB)) == NULL) {
 	    Tcl_MutexUnlock(&mysqlMutex);
 	    return TCL_ERROR;
 	}
@@ -3791,8 +3792,9 @@ Tdbcmysql_Init(
 	(The current MariaDb version is over 10 at the time of this writing.)
 	Set the version manually to always select "st_mysql_bind_51".
 	*/
-
-	mysqlClientVersion = 50100;
+	if (mysqlClientVersion >= 50100 || (mysqlClientVersion >= 30207 && isMariaDB )) {
+	    mysqlClientVersion = 50100;
+	}
 
     }
     ++mysqlRefCount;
