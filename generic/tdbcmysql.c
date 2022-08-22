@@ -55,8 +55,11 @@ TCL_DECLARE_MUTEX(mysqlMutex);	/* Mutex protecting the global environment
 static int mysqlRefCount = 0;	/* Reference count on the global environment */
 Tcl_LoadHandle mysqlLoadHandle = NULL;
 				/* Handle to the MySQL library */
-unsigned long mysqlClientVersion;
-				/* Version number of MySQL */
+/*
+ * Struct version flag, true for mysql version >= 50100 orMariaDB version >=
+ * 30207.
+ */
+int useExtendedMysqlStruct;
 
 /*
  * Objects to create within the literal pool
@@ -741,7 +744,7 @@ MysqlBindAlloc(int nBindings)
 {
     int size;
     void* retval = NULL;
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	size = sizeof(struct st_mysql_bind_51);
     } else {
 	size = sizeof(struct st_mysql_bind_50);
@@ -769,7 +772,7 @@ MysqlBindIndex(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	return (MYSQL_BIND*)(((struct st_mysql_bind_51*) b) + i);
     } else {
 	return (MYSQL_BIND*)(((struct st_mysql_bind_50*) b) + i);
@@ -799,7 +802,7 @@ MysqlBindAllocBuffer(
     if (len != 0) {
 	block = ckalloc(len);
     }
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	((struct st_mysql_bind_51*) b)[i].buffer = block;
 	((struct st_mysql_bind_51*) b)[i].buffer_length = len;
     } else {
@@ -829,7 +832,7 @@ MysqlBindFreeBuffer(
     MYSQL_BIND* b,		/* Pointer to a binding array */
     int i			/* Index into the array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	struct st_mysql_bind_51* bindings = (struct st_mysql_bind_51*) b;
 	if (bindings[i].buffer) {
 	    ckfree(bindings[i].buffer);
@@ -863,7 +866,7 @@ MysqlBindGetBuffer(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer;
@@ -875,7 +878,7 @@ MysqlBindGetBufferLength(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer_length;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer_length;
@@ -888,7 +891,7 @@ MysqlBindGetBufferType(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer_type;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer_type;
@@ -901,7 +904,7 @@ MysqlBindSetBufferType(
     int i,			/* Index in the binding array */
     enum enum_field_types t	/* Buffer type to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	((struct st_mysql_bind_51*) b)[i].buffer_type = t;
     } else {
 	((struct st_mysql_bind_50*) b)[i].buffer_type = t;
@@ -914,7 +917,7 @@ MysqlBindSetLength(
     int i,			/* Index in the binding array */
     unsigned long* p		/* Length pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	((struct st_mysql_bind_51*) b)[i].length = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].length = p;
@@ -927,7 +930,7 @@ MysqlBindSetIsNull(
     int i,			/* Index in the binding array */
     my_bool* p			/* "Is null" indicator pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	((struct st_mysql_bind_51*) b)[i].is_null = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].is_null = p;
@@ -940,7 +943,7 @@ MysqlBindSetError(
     int i,			/* Index in the binding array */
     my_bool* p			/* Error indicator pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	((struct st_mysql_bind_51*) b)[i].error = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].error = p;
@@ -967,7 +970,7 @@ MysqlFieldIndex(MYSQL_FIELD* fields,
 		int i)		/* Index in the array */
 {
     MYSQL_FIELD* retval;
-    if (mysqlClientVersion >= 50100) {
+    if (useExtendedMysqlStruct) {
 	retval = (MYSQL_FIELD*)(((struct st_mysql_field_51*) fields)+i);
     } else {
 	retval = (MYSQL_FIELD*)(((struct st_mysql_field_50*) fields)+i);
@@ -3579,6 +3582,8 @@ Tdbcmysql_Init(
     Tcl_Class curClass;		/* Tcl_Class representing the current class */
     int i;
     Tcl_CmdInfo info;
+	unsigned long mysqlClientVersion;
+					/* Version number of MySQL */
 
     /* Require all package dependencies */
 
@@ -3785,16 +3790,13 @@ Tdbcmysql_Init(
 	mysqlClientVersion = mysql_get_client_version();
 
 	/*
-	The only use of mysqlClientVersion in this in this program is to check that
-	it is >= 50100 and select "st_mysql_bind_50" or "st_mysql_bind_51" accordingly.
-	Since MariaDb 10.6.2 the client version (a lower number) is reported.
-	https://github.com/perl5-dbi/DBD-mysql/issues/333
-	(The current MariaDb version is over 10 at the time of this writing.)
-	Set the version manually to always select "st_mysql_bind_51".
-	*/
-	if (mysqlClientVersion >= 50100 || (mysqlClientVersion >= 30207 && isMariaDB )) {
-	    mysqlClientVersion = 50100;
-	}
+	 * Check if MySQL version is >= 50100 or MariaDB Version >= 30207
+	 * to select "st_mysql_bind_50" or "st_mysql_bind_51" accordingly.
+	 * Since MariaDb 10.6.2 the client version (a lower number) is reported.
+	 * https://github.com/perl5-dbi/DBD-mysql/issues/333
+	 */
+	useExtendedMysqlStruct = (mysqlClientVersion >= 50100 ||
+			(mysqlClientVersion >= 30207 && isMariaDB ));
 
     }
     ++mysqlRefCount;
