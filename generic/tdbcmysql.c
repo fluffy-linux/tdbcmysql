@@ -55,9 +55,12 @@ TCL_DECLARE_MUTEX(mysqlMutex);	/* Mutex protecting the global environment
 static int mysqlRefCount = 0;	/* Reference count on the global environment */
 Tcl_LoadHandle mysqlLoadHandle = NULL;
 				/* Handle to the MySQL library */
-unsigned long mysqlClientVersion;
+unsigned long mysqlClientVersion = 0;
 				/* Version number of MySQL */
-
+Tcl_Obj* mysqlClientLibName = NULL;
+                                /* Name of the MySQL client library */
+int mysqlClientAtLeast51;       /* Flag == 1 if MySQL client is at least
+                                 * version 5.1.0 */
 /*
  * Objects to create within the literal pool
  */
@@ -741,7 +744,7 @@ MysqlBindAlloc(int nBindings)
 {
     int size;
     void* retval = NULL;
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	size = sizeof(struct st_mysql_bind_51);
     } else {
 	size = sizeof(struct st_mysql_bind_50);
@@ -769,7 +772,7 @@ MysqlBindIndex(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	return (MYSQL_BIND*)(((struct st_mysql_bind_51*) b) + i);
     } else {
 	return (MYSQL_BIND*)(((struct st_mysql_bind_50*) b) + i);
@@ -799,7 +802,7 @@ MysqlBindAllocBuffer(
     if (len != 0) {
 	block = ckalloc(len);
     }
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].buffer = block;
 	((struct st_mysql_bind_51*) b)[i].buffer_length = len;
     } else {
@@ -829,7 +832,7 @@ MysqlBindFreeBuffer(
     MYSQL_BIND* b,		/* Pointer to a binding array */
     int i			/* Index into the array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	struct st_mysql_bind_51* bindings = (struct st_mysql_bind_51*) b;
 	if (bindings[i].buffer) {
 	    ckfree(bindings[i].buffer);
@@ -863,7 +866,7 @@ MysqlBindGetBuffer(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer;
@@ -875,7 +878,7 @@ MysqlBindGetBufferLength(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer_length;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer_length;
@@ -888,7 +891,7 @@ MysqlBindGetBufferType(
     MYSQL_BIND* b, 		/* Binding array to alter */
     int i			/* Index in the binding array */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	return ((struct st_mysql_bind_51*) b)[i].buffer_type;
     } else {
 	return ((struct st_mysql_bind_50*) b)[i].buffer_type;
@@ -901,7 +904,7 @@ MysqlBindSetBufferType(
     int i,			/* Index in the binding array */
     enum enum_field_types t	/* Buffer type to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].buffer_type = t;
     } else {
 	((struct st_mysql_bind_50*) b)[i].buffer_type = t;
@@ -914,7 +917,7 @@ MysqlBindSetLength(
     int i,			/* Index in the binding array */
     unsigned long* p		/* Length pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].length = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].length = p;
@@ -927,7 +930,7 @@ MysqlBindSetIsNull(
     int i,			/* Index in the binding array */
     my_bool* p			/* "Is null" indicator pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].is_null = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].is_null = p;
@@ -940,7 +943,7 @@ MysqlBindSetError(
     int i,			/* Index in the binding array */
     my_bool* p			/* Error indicator pointer to assign */
 ) {
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].error = p;
     } else {
 	((struct st_mysql_bind_50*) b)[i].error = p;
@@ -967,7 +970,7 @@ MysqlFieldIndex(MYSQL_FIELD* fields,
 		int i)		/* Index in the array */
 {
     MYSQL_FIELD* retval;
-    if (mysqlClientVersion >= 50100) {
+    if (mysqlClientAtLeast51) {
 	retval = (MYSQL_FIELD*)(((struct st_mysql_field_51*) fields)+i);
     } else {
 	retval = (MYSQL_FIELD*)(((struct st_mysql_field_50*) fields)+i);
@@ -3782,10 +3785,20 @@ Tdbcmysql_Init(
 	}
 	mysql_library_init(0, NULL, NULL);
 	mysqlClientVersion = mysql_get_client_version();
+        mysqlClientLibName = Tcl_GetObjResult(interp);
+        Tcl_IncrRefCount(mysqlClientLibName);
+
+        if (strstr(Tcl_GetString(mysqlClientLibName), "maria") != NULL
+            || mysqlClientVersion >= 50100) {
+            mysqlClientAtLeast51 = 1;
+        } else {
+            mysqlClientAtLeast51 = 0;
+        }
     }
     ++mysqlRefCount;
     Tcl_MutexUnlock(&mysqlMutex);
 
+    
     /*
      * TODO: mysql_thread_init, and keep a TSD reference count of users.
      */
@@ -3839,6 +3852,10 @@ DeletePerInterpData(
     if (--mysqlRefCount == 0) {
 	mysql_library_end();
 	Tcl_FSUnloadFile(NULL, mysqlLoadHandle);
+        if (mysqlClientLibName != NULL) {
+            Tcl_DecrRefCount(mysqlClientLibName);
+            mysqlClientLibName = NULL;
+        }
     }
     Tcl_MutexUnlock(&mysqlMutex);
 }

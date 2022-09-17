@@ -4,7 +4,7 @@
  *	Stubs tables for the foreign MySQL libraries so that
  *	Tcl extensions can use them without the linker's knowing about them.
  *
- * @CREATED@ 2017-05-26 05:57:32Z by genExtStubs.tcl from ../generic/mysqlStubDefs.txt
+ * @CREATED@ 2022-09-17 18:18:42Z by genExtStubs.tcl from ./generic/mysqlStubDefs.txt
  *
  * Copyright (c) 2010 by Kevin B. Kenny.
  *
@@ -37,7 +37,7 @@
 
 static const char *const mysqlStubLibNames[] = {
     /* @LIBNAMES@: DO NOT EDIT THESE NAMES */
-    "mysqlclient_r", "mysqlclient", "mysql", "mariadbclient", "mariadb", NULL
+    "mariadbclient", "mariadb", "mysqlclient_r", "mysqlclient", "mysql", NULL
     /* @END@ */
 };
 
@@ -112,8 +112,12 @@ const mysqlStubDefs* mysqlStubs = &mysqlStubsTable;
  *
  * Results:
  *	Returns the handle to the loaded MySQL client library, or NULL
- *	if the load is unsuccessful. Leaves an error message in the
- *	interpreter.
+ *	if the load is unsuccessful.
+ *
+ *	Leaves the name of the loaded client library in the interpreter if
+ *	successful.
+ *
+ *      Leaves an error message in the interpreter on failure.
  *
  *-----------------------------------------------------------------------------
  */
@@ -161,7 +165,9 @@ MysqlInitStubs(Tcl_Interp* interp)
 	    Tcl_ResetResult(interp);
 	    status = Tcl_LoadFile(interp, path, mysqlSymbolNames, 0,
 				  &mysqlStubsTable, &handle);
-	    Tcl_DecrRefCount(path);
+	    if (status != TCL_OK) {
+                Tcl_DecrRefCount(path);
+            }
 	}
     }
 
@@ -174,5 +180,9 @@ MysqlInitStubs(Tcl_Interp* interp)
     if (status != TCL_OK) {
 	return NULL;
     }
+
+    Tcl_SetObjResult(interp, path);
+    Tcl_DecrRefCount(path);
+    
     return handle;
 }
