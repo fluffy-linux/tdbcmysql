@@ -21,7 +21,7 @@ PROJECT = tdbcmysql
 # without -DUNICODE. Keep that behaviour for now. TBD
 USE_WIDECHAR_API  = 0
 
-PRJ_DEFINES = $(PRJ_DEFINES) -DTCL_NO_DEPRECATED=1
+PRJ_DEFINES = $(PRJ_DEFINES)
 PRJ_DEFINES = $(PRJ_DEFINES) -I$(TMP_DIR)
 
 !include "rules-ext.vc"
