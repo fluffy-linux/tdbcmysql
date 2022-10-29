@@ -183,6 +183,6 @@ MysqlInitStubs(Tcl_Interp* interp)
 
     Tcl_SetObjResult(interp, path);
     Tcl_DecrRefCount(path);
-    
+
     return handle;
 }

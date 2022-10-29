@@ -3798,7 +3798,7 @@ Tdbcmysql_Init(
     ++mysqlRefCount;
     Tcl_MutexUnlock(&mysqlMutex);
 
-    
+
     /*
      * TODO: mysql_thread_init, and keep a TSD reference count of users.
      */
