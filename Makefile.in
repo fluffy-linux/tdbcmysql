@@ -394,9 +394,9 @@ dist: dist-clean $(srcdir)/manifest.uuid
 		$(DIST_DIR)/tests/
 
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/win
-	$(DIST_INSTALL_DATA) $(srcdir)/win/makefile.vc $(srcdir)/win/nmakehlp.c \
-		$(srcdir)/win/targets.vc $(srcdir)/win/rules-ext.vc \
-		$(srcdir)/win/rules.vc $(DIST_DIR)/win/
+	$(DIST_INSTALL_DATA) $(srcdir)/win/*.vc $(srcdir)/win/*.in \
+		$(srcdir)/win/nmakehlp.c \
+		$(DIST_DIR)/win/
 
 	(cd $(DIST_ROOT); $(COMPRESS);)
 
