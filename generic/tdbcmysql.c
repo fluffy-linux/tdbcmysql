@@ -61,11 +61,16 @@ Tcl_Obj* mysqlClientLibName = NULL;
                                 /* Name of the MySQL client library */
 int mysqlClientAtLeast51;       /* Flag == 1 if MySQL client is at least
                                  * version 5.1.0 */
+
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 7)
+#   define Tcl_Size int
+#endif
+
 /*
  * Objects to create within the literal pool
  */
 
-const char* LiteralValues[] = {
+const char *const LiteralValues[] = {
     "",
     "0",
     "1",
@@ -431,7 +436,7 @@ static void TransferMysqlStmtError(Tcl_Interp* interp, MYSQL_STMT* mysqlPtr);
 static Tcl_Obj* QueryConnectionOption(ConnectionData* cdata, Tcl_Interp* interp,
 				      int optionNum);
 static int ConfigureConnection(ConnectionData* cdata, Tcl_Interp* interp,
-			       size_t objc, Tcl_Obj *const objv[], size_t skip);
+			       Tcl_Size objc, Tcl_Obj *const objv[], Tcl_Size skip);
 static int ConnectionConstructor(void *clientData, Tcl_Interp* interp,
 				 Tcl_ObjectContext context,
 				 int objc, Tcl_Obj *const objv[]);
@@ -1129,9 +1134,9 @@ static int
 ConfigureConnection(
     ConnectionData* cdata,	/* Connection data */
     Tcl_Interp* interp,		/* Tcl interpreter */
-    size_t objc,			/* Parameter count */
+    Tcl_Size objc,			/* Parameter count */
     Tcl_Obj* const objv[],	/* Parameter data */
-    size_t skip			/* Number of parameters to skip */
+    Tcl_Size skip			/* Number of parameters to skip */
 ) {
 
     const char* stringOpts[INDX_MAX];
@@ -1143,7 +1148,7 @@ ConfigureConnection(
     unsigned short port = 0;	/* Server port number */
     int isolation = ISOL_NONE;	/* Isolation level */
     int timeout = 0;		/* Timeout value */
-    size_t i;
+    Tcl_Size i;
     Tcl_Obj* retval;
     Tcl_Obj* optval;
 
@@ -1414,7 +1419,7 @@ ConnectionConstructor(
 				/* Per-interp data for the MYSQL package */
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
 				/* The current object */
-    size_t skip = Tcl_ObjectContextSkippedArgs(context);
+    Tcl_Size skip = Tcl_ObjectContextSkippedArgs(context);
 				/* The number of leading arguments to skip */
     ConnectionData* cdata;	/* Per-connection data */
 
@@ -1711,7 +1716,7 @@ static int ConnectionConfigureMethod(
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(objectContext);
 				/* The current connection object */
-    size_t skip = Tcl_ObjectContextSkippedArgs(objectContext);
+    Tcl_Size skip = Tcl_ObjectContextSkippedArgs(objectContext);
 				/* Number of arguments to skip */
     ConnectionData* cdata = (ConnectionData*)
 	Tcl_ObjectGetMetadata(thisObject, &connectionDataType);
@@ -1976,7 +1981,7 @@ ConnectionSetCollationInfoMethod(
     ConnectionData* cdata = (ConnectionData*)
 	Tcl_ObjectGetMetadata(thisObject, &connectionDataType);
 				/* Instance data */
-    int listLen;
+    Tcl_Size listLen;
     Tcl_Obj* objPtr;
     unsigned int collationNum;
     int i;
@@ -2288,7 +2293,7 @@ AllocAndPrepareStatement(
 				/* Connection data */
     MYSQL_STMT* stmtPtr;	/* Statement handle */
     const char* nativeSqlStr;	/* Native SQL statement to prepare */
-    int nativeSqlLen;		/* Length of the statement */
+    Tcl_Size nativeSqlLen;		/* Length of the statement */
 
     /* Allocate space for the prepared statement */
 
@@ -2410,7 +2415,7 @@ StatementConstructor(
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
 				/* The current statement object */
-    size_t skip = Tcl_ObjectContextSkippedArgs(context);
+    Tcl_Size skip = Tcl_ObjectContextSkippedArgs(context);
 				/* Number of args to skip before the
 				 * payload arguments */
     Tcl_Object connectionObject;
@@ -2418,13 +2423,13 @@ StatementConstructor(
     ConnectionData* cdata;	/* The connection object's data */
     StatementData* sdata;	/* The statement's object data */
     Tcl_Obj* tokens;		/* The tokens of the statement to be prepared */
-    int tokenc;			/* Length of the 'tokens' list */
+    Tcl_Size tokenc;			/* Length of the 'tokens' list */
     Tcl_Obj** tokenv;		/* Exploded tokens from the list */
     Tcl_Obj* nativeSql;		/* SQL statement mapped to native form */
     char* tokenStr;		/* Token string */
-    int tokenLen;		/* Length of a token */
-    int nParams;		/* Number of parameters of the statement */
-    int i;
+    Tcl_Size tokenLen;		/* Length of a token */
+    Tcl_Size nParams;		/* Number of parameters of the statement */
+    Tcl_Size i;
 
     /* Find the connection object, and get its data. */
 
@@ -2577,13 +2582,13 @@ StatementParamsMethod(
     ConnectionData* cdata = sdata->cdata;
     PerInterpData* pidata = cdata->pidata; /* Per-interp data */
     Tcl_Obj** literals = pidata->literals; /* Literal pool */
-    int nParams;		/* Number of parameters to the statement */
+    Tcl_Size nParams;		/* Number of parameters to the statement */
     Tcl_Obj* paramName;		/* Name of a parameter */
     Tcl_Obj* paramDesc;		/* Description of one parameter */
     Tcl_Obj* dataTypeName;	/* Name of a parameter's data type */
     Tcl_Obj* retVal;		/* Return value from this command */
     Tcl_HashEntry* typeHashEntry;
-    int i;
+    Tcl_Size i;
 
     if (objc != 2) {
 	Tcl_WrongNumArgs(interp, 2, objv, "");
@@ -2676,7 +2681,7 @@ StatementParamtypeMethod(
     int precision;		/* Data precision */
     int scale;			/* Data scale */
 
-    int nParams;		/* Number of parameters to the statement */
+    Tcl_Size nParams;		/* Number of parameters to the statement */
     const char* paramName;	/* Name of the parameter being set */
     Tcl_Obj* targetNameObj;	/* Name of the ith parameter in the statement */
     const char* targetName;	/* Name of a candidate parameter in the
@@ -2685,7 +2690,7 @@ StatementParamtypeMethod(
     Tcl_Obj* errorObj;		/* Error message */
 
     int i;
-    int j;
+    Tcl_Size j;
 
     /* Check parameters */
 
@@ -2874,30 +2879,30 @@ ResultSetConstructor(
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
 				/* The current result set object */
-    size_t skip = Tcl_ObjectContextSkippedArgs(context);
+    Tcl_Size skip = Tcl_ObjectContextSkippedArgs(context);
 				/* Number of args to skip */
     Tcl_Object statementObject;	/* The current statement object */
     ConnectionData* cdata;	/* The MySQL connection object's data */
     StatementData* sdata;	/* The statement object's data */
     ResultSetData* rdata;	/* THe result set object's data */
-    int nParams;		/* The parameter count on the statement */
-    int nBound;			/* Number of parameters bound so far */
+    Tcl_Size nParams;		/* The parameter count on the statement */
+    Tcl_Size nBound;		/* Number of parameters bound so far */
     Tcl_Obj* paramNameObj;	/* Name of the current parameter */
     const char* paramName;	/* Name of the current parameter */
     Tcl_Obj* paramValObj;	/* Value of the current parameter */
     const char* paramValStr;	/* String value of the current parameter */
     char* bufPtr;		/* Pointer to the parameter buffer */
-    int len;			/* Length of a bound parameter */
-    int nColumns;		/* Number of columns in the result set */
+    Tcl_Size len;		/* Length of a bound parameter */
+    Tcl_Size nColumns;	/* Number of columns in the result set */
     MYSQL_FIELD* fields = NULL;	/* Description of columns of the result set */
     MYSQL_BIND* resultBindings;	/* Bindings of the columns of the result set */
     unsigned long* resultLengths;
 				/* Lengths of the columns of the result set */
-    int i;
+    Tcl_Size i;
 
     /* Check parameter count */
 
-    if ((size_t)objc != skip+1 && objc != (size_t)skip+2) {
+    if (objc != skip+1 && objc != skip+2) {
 	Tcl_WrongNumArgs(interp, skip, objv, "statement ?dictionary?");
 	return TCL_ERROR;
     }
@@ -3281,7 +3286,7 @@ ResultSetNextrowMethod(
     Tcl_Obj** literals = pidata->literals;
 				/* Literal pool */
 
-    int nColumns = 0;		/* Number of columns in the result set */
+    Tcl_Size nColumns = 0;	/* Number of columns in the result set */
     Tcl_Obj* colName;		/* Name of the current column */
     Tcl_Obj* resultRow;		/* Row of the result set under construction */
 
@@ -3298,7 +3303,7 @@ ResultSetNextrowMethod(
     unsigned char byte;		/* One byte extracted from a bit field */
     Tcl_WideInt bitVal;		/* Value of a bit field */
     int mysqlStatus;		/* Status return from MySQL */
-    int i;
+    Tcl_Size i;
     unsigned int j;
 
     if (objc != 3) {
@@ -3485,9 +3490,9 @@ DeleteResultSet(
     ResultSetData* rdata	/* Metadata for the result set */
 ) {
     StatementData* sdata = rdata->sdata;
-    int i;
-    int nParams;
-    int nColumns;
+    Tcl_Size i;
+    Tcl_Size nParams;
+    Tcl_Size nColumns;
     Tcl_ListObjLength(NULL, sdata->subVars, &nParams);
     Tcl_ListObjLength(NULL, sdata->columnNames, &nColumns);
     for (i = 0; i < nColumns; ++i) {
