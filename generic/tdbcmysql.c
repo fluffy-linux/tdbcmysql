@@ -479,7 +479,7 @@ static int CloneConnection(Tcl_Interp* interp, void *oldClientData,
 static StatementData* NewStatement(ConnectionData* cdata);
 static MYSQL_STMT* AllocAndPrepareStatement(Tcl_Interp* interp,
 					    StatementData* sdata);
-static Tcl_Obj* ResultDescToTcl(MYSQL_RES* resultDesc, int flags);
+static Tcl_Obj* ResultDescToTcl(MYSQL_RES* resultDesc);
 
 static int StatementConstructor(void *clientData, Tcl_Interp* interp,
 				Tcl_ObjectContext context,
@@ -2339,8 +2339,7 @@ AllocAndPrepareStatement(
 
 static Tcl_Obj*
 ResultDescToTcl(
-    MYSQL_RES* result,		/* Result set description */
-    TCL_UNUSED(int)			/* Flags governing the conversion */
+    MYSQL_RES* result		/* Result set description */
 ) {
     Tcl_Obj* retval = Tcl_NewObj();
     Tcl_HashTable names;	/* Hash table to resolve name collisions */
@@ -2365,7 +2364,7 @@ ResultDescToTcl(
 		count = PTR2INT(Tcl_GetHashValue(entry));
 		++count;
 		Tcl_SetHashValue(entry, INT2PTR(count));
-		sprintf(numbuf, "#%d", count);
+		snprintf(numbuf, sizeof(numbuf), "#%d", count);
 		Tcl_AppendToObj(nameObj, numbuf, -1);
 		entry = Tcl_CreateHashEntry(&names, Tcl_GetString(nameObj),
 					    &isNew);
@@ -2434,7 +2433,7 @@ StatementConstructor(
     /* Find the connection object, and get its data. */
 
     thisObject = Tcl_ObjectContextObject(context);
-    if ((size_t)objc != skip+2) {
+    if (objc != skip+2) {
 	Tcl_WrongNumArgs(interp, skip, objv, "connection statementText");
 	return TCL_ERROR;
     }
@@ -2518,7 +2517,7 @@ StatementConstructor(
 	TransferMysqlStmtError(interp, sdata->stmtPtr);
 	goto freeSData;
     }
-    sdata->columnNames = ResultDescToTcl(sdata->metadataPtr, 0);
+    sdata->columnNames = ResultDescToTcl(sdata->metadataPtr);
     Tcl_IncrRefCount(sdata->columnNames);
 
     Tcl_ListObjLength(NULL, sdata->subVars, &nParams);
@@ -2686,7 +2685,7 @@ StatementParamtypeMethod(
     Tcl_Obj* targetNameObj;	/* Name of the ith parameter in the statement */
     const char* targetName;	/* Name of a candidate parameter in the
 				 * statement */
-    int matchCount = 0;		/* Number of parameters matching the name */
+    int matchFound = 0;		/* Number of parameters matching the name */
     Tcl_Obj* errorObj;		/* Error message */
 
     int i;
@@ -2741,14 +2740,14 @@ StatementParamtypeMethod(
 	Tcl_ListObjIndex(NULL, sdata->subVars, j, &targetNameObj);
 	targetName = Tcl_GetString(targetNameObj);
 	if (!strcmp(paramName, targetName)) {
-	    ++matchCount;
+	    matchFound = 1;
 	    sdata->params[j].flags = direction;
 	    sdata->params[j].dataType = dataTypes[typeNum].num;
 	    sdata->params[j].precision = precision;
 	    sdata->params[j].scale = scale;
 	}
     }
-    if (matchCount == 0) {
+    if (!matchFound) {
 	errorObj = Tcl_NewStringObj("unknown parameter \"", -1);
 	Tcl_AppendToObj(errorObj, paramName, -1);
 	Tcl_AppendToObj(errorObj, "\": must be ", -1);
@@ -3043,7 +3042,7 @@ ResultSetConstructor(
     for (nBound = 0; nBound < nParams; ++nBound) {
 	Tcl_ListObjIndex(NULL, sdata->subVars, nBound, &paramNameObj);
 	paramName = Tcl_GetString(paramNameObj);
-	if ((size_t)objc == skip+2) {
+	if (objc == skip+2) {
 
 	    /* Param from a dictionary */
 
