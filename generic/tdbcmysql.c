@@ -70,7 +70,7 @@ int mysqlClientAtLeast51;       /* Flag == 1 if MySQL client is at least
  * Objects to create within the literal pool
  */
 
-const char *const LiteralValues[] = {
+static const char *const LiteralValues[] = {
     "",
     "0",
     "1",
