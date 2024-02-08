@@ -33,6 +33,10 @@
 
 #include "fakemysql.h"
 
+#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1900
+#define   snprintf	_snprintf
+#endif
+
 #ifndef JOIN
 #  define JOIN(a,b) JOIN1(a,b)
 #  define JOIN1(a,b) a##b
