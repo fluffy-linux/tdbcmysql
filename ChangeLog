@@ -119,7 +119,7 @@
 			       executing statements that are unimplemented
 			       in the MySQL prepared statement API.
 	* generic/tdbcmysql.tcl: Did a rough (not really functional) hack
-	                         at formatting prepared statements.
+				 at formatting prepared statements.
 	* tests/tdbcmysql.test (tdbc::mysql-25.*): Added two tests for
 	creating a (parameterless) stored procedure and executing it.
 
@@ -170,12 +170,12 @@
 2010-05-23  Kevin B. Kenny  <kennykb@acm.org>
 
 	* library/tdbcmysql.tcl: Added a 'BuildForeignKeysStatement' method
-	                         to tdbcmysql::connection that overrides the
+				 to tdbcmysql::connection that overrides the
 				 one in the base class and accommodates the
 				 nonstandard INFORMATION_SCHEMA provided in
 				 MySQL.
 	* tests/tdbcmysql.test: Added test cases for '$db primarykeys'
-	                        and '$db foreignkeys'
+				and '$db foreignkeys'
 
 2010-05-12  Kevin B. Kenny  <kennykb@acm.org>
 
@@ -235,9 +235,9 @@
 	* Makefile.in: Added explicit reference to the TDBC library in the
 		       TCLSH_ENV. Updated the 'dist' rule to include new files.
 		       Added a 'genstubs' rule to make the stubs to load
-	               the MySQL libraries at run time.
+		       the MySQL libraries at run time.
 	* configure.in: Removed compile-time references to the MySQL headers
-	                and libraries. Added new files to SOURCES and HEADERS.
+			and libraries. Added new files to SOURCES and HEADERS.
 	* generic/fakemysql.h (new file):
 		Minimal subset of mysql.h needed to make tdbc::mysql compile.
 	* generic/mysqlStubDefs.txt (new file):
@@ -289,17 +289,17 @@
 2009-04-19  Kevin B. Kenny  <kennykb@acm.org>
 
 	* generic/tdbcmysql.c: Silenced a compiler warning about 'fields'
-	                       being used uninitialized.
+			       being used uninitialized.
 	* doc/tdbc_mysql.n: Added missing documentation for 'new' constructors.
 
 2009-04-18  Kevin B. Kenny  <kennykb@acm.org>
 
 	* generic/tdbcmysql.c: Changed so that an inappropriate access to
-	                       an array or a failing read trace yields NULL.
+			       an array or a failing read trace yields NULL.
 	* tests/tdbcmysql.test: Revised test cases according to the above
 				change.
 	* doc/tdbc_mysql.n: Made changes so that NROFF formatting matches
-	                    the Tcl standard.
+			    the Tcl standard.
 
 2009-04-16  Kevin B. Kenny  <kennykb@acm.org>
 
@@ -310,9 +310,9 @@
 	* generic/tdbcmysql.c: Reworked the allocation of result buffers
 			       so that they belong to the result set and
 			       are not allocated per row. Pushed binding the
-	                       results up before mysql_stmt_execute,
-	                       avoiding a crash if the same statement handle
-	                       has been used before [Ticket 39a78606aa].
+			       results up before mysql_stmt_execute,
+			       avoiding a crash if the same statement handle
+			       has been used before [Ticket 39a78606aa].
 			       No update made to test suite because
 			       valgrind detected the error with existing
 			       tests on a -DPURIFY build.

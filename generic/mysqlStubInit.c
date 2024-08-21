@@ -166,8 +166,8 @@ MysqlInitStubs(Tcl_Interp* interp)
 	    status = Tcl_LoadFile(interp, path, mysqlSymbolNames, 0,
 				  &mysqlStubsTable, &handle);
 	    if (status != TCL_OK) {
-                Tcl_DecrRefCount(path);
-            }
+		Tcl_DecrRefCount(path);
+	    }
 	}
     }
 

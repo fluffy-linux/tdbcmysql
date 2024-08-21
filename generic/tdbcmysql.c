@@ -63,9 +63,9 @@ Tcl_LoadHandle mysqlLoadHandle = NULL;
 unsigned long mysqlClientVersion = 0;
 				/* Version number of MySQL */
 Tcl_Obj* mysqlClientLibName = NULL;
-                                /* Name of the MySQL client library */
+				/* Name of the MySQL client library */
 int mysqlClientAtLeast51;       /* Flag == 1 if MySQL client is at least
-                                 * version 5.1.0 */
+				 * version 5.1.0 */
 
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 7)
 #   define Tcl_Size int
@@ -354,7 +354,7 @@ static const struct {
     { "-database",    TYPE_STRING,    INDX_DB,		  CONN_OPT_FLAG_MOD,
       "SELECT '', DATABASE();"},
     { "-db",	      TYPE_STRING,    INDX_DB, 		  CONN_OPT_FLAG_MOD
-                                                        | CONN_OPT_FLAG_ALIAS,
+							| CONN_OPT_FLAG_ALIAS,
       "SELECT '', DATABASE()" },
     { "-encoding",    TYPE_ENCODING,  0,		  0,
       "SELECT '', 'utf-8'" },
@@ -365,7 +365,7 @@ static const struct {
     { "-isolation",   TYPE_ISOLATION, 0,		  CONN_OPT_FLAG_MOD,
       "SELECT '', LCASE(REPLACE(@@TX_ISOLATION, '-', ''))" },
     { "-passwd",      TYPE_STRING,    INDX_PASSWD,	  CONN_OPT_FLAG_MOD
-                                                        | CONN_OPT_FLAG_ALIAS,
+							| CONN_OPT_FLAG_ALIAS,
       "SELECT '', ''" },
     { "-password",    TYPE_STRING,    INDX_PASSWD,	  CONN_OPT_FLAG_MOD,
       "SELECT '', ''" },
@@ -384,7 +384,7 @@ static const struct {
     { "-ssl_cipher",  TYPE_STRING,    INDX_SSLCIPHER,	  CONN_OPT_FLAG_SSL,
       "SELECT '', @@SSL_CIPHER" },
     { "-ssl_cypher",  TYPE_STRING,    INDX_SSLCIPHER,	  CONN_OPT_FLAG_SSL
-                                                        | CONN_OPT_FLAG_ALIAS,
+							| CONN_OPT_FLAG_ALIAS,
       "SELECT '', @@SSL_CIPHER" },
     { "-ssl_key",     TYPE_STRING,    INDX_SSLKEY,	  CONN_OPT_FLAG_SSL,
       "SELECT '', @@SSL_KEY" },
@@ -1380,7 +1380,7 @@ ConfigureConnection(
     /* Timeout */
 
     if (timeout != 0) {
-        int result;
+	int result;
 	Tcl_Obj* query = Tcl_ObjPrintf("SET SESSION WAIT_TIMEOUT = %d\n",
 				       timeout);
 	Tcl_IncrRefCount(query);
@@ -3795,15 +3795,15 @@ Tdbcmysql_Init(
 	}
 	mysql_library_init(0, NULL, NULL);
 	mysqlClientVersion = mysql_get_client_version();
-        mysqlClientLibName = Tcl_GetObjResult(interp);
-        Tcl_IncrRefCount(mysqlClientLibName);
+	mysqlClientLibName = Tcl_GetObjResult(interp);
+	Tcl_IncrRefCount(mysqlClientLibName);
 
-        if (strstr(Tcl_GetString(mysqlClientLibName), "maria") != NULL
-            || mysqlClientVersion >= 50100) {
-            mysqlClientAtLeast51 = 1;
-        } else {
-            mysqlClientAtLeast51 = 0;
-        }
+	if (strstr(Tcl_GetString(mysqlClientLibName), "maria") != NULL
+	    || mysqlClientVersion >= 50100) {
+	    mysqlClientAtLeast51 = 1;
+	} else {
+	    mysqlClientAtLeast51 = 0;
+	}
     }
     ++mysqlRefCount;
     Tcl_MutexUnlock(&mysqlMutex);
@@ -3862,10 +3862,10 @@ DeletePerInterpData(
     if (--mysqlRefCount == 0) {
 	mysql_library_end();
 	Tcl_FSUnloadFile(NULL, mysqlLoadHandle);
-        if (mysqlClientLibName != NULL) {
-            Tcl_DecrRefCount(mysqlClientLibName);
-            mysqlClientLibName = NULL;
-        }
+	if (mysqlClientLibName != NULL) {
+	    Tcl_DecrRefCount(mysqlClientLibName);
+	    mysqlClientLibName = NULL;
+	}
     }
     Tcl_MutexUnlock(&mysqlMutex);
 }

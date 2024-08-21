@@ -100,23 +100,23 @@ package require tdbc
 	    } {
 		set stmt [my prepare "
 	     SELECT rc.CONSTRAINT_SCHEMA AS \"foreignConstraintSchema\",
-                    rc.CONSTRAINT_NAME AS \"foreignConstraintName\",
-                    rc.UPDATE_RULE AS \"updateAction\",
+		    rc.CONSTRAINT_NAME AS \"foreignConstraintName\",
+		    rc.UPDATE_RULE AS \"updateAction\",
 		    rc.DELETE_RULE AS \"deleteAction\",
 		    fkc.REFERENCED_TABLE_SCHEMA AS \"primarySchema\",
-                    fkc.REFERENCED_TABLE_NAME AS \"primaryTable\",
-                    fkc.REFERENCED_COLUMN_NAME AS \"primaryColumn\",
-                    fkc.TABLE_SCHEMA AS \"foreignSchema\",
-                    fkc.TABLE_NAME AS \"foreignTable\",
-                    fkc.COLUMN_NAME AS \"foreignColumn\",
-                    fkc.ORDINAL_POSITION AS \"ordinalPosition\"
-             FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-             INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fkc
-                     ON fkc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
-                    AND fkc.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
-             WHERE 1=1
-                 $clause1
-                 $clause2
+		    fkc.REFERENCED_TABLE_NAME AS \"primaryTable\",
+		    fkc.REFERENCED_COLUMN_NAME AS \"primaryColumn\",
+		    fkc.TABLE_SCHEMA AS \"foreignSchema\",
+		    fkc.TABLE_NAME AS \"foreignTable\",
+		    fkc.COLUMN_NAME AS \"foreignColumn\",
+		    fkc.ORDINAL_POSITION AS \"ordinalPosition\"
+	     FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+	     INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fkc
+		     ON fkc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
+		    AND fkc.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
+	     WHERE 1=1
+		 $clause1
+		 $clause2
 "]
 		dict set foreignKeysStatement $exists1 $exists2 $stmt
 	    }
