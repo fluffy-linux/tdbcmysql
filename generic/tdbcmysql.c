@@ -50,6 +50,7 @@
   typedef Tcl_ObjCmdProc Tcl_ObjCmdProc2;
   typedef Tcl_MethodType Tcl_MethodType2;
 # define Tcl_NewMethod2 Tcl_NewMethod
+# define Tcl_NewWideUIntObj(i) Tcl_NewWideIntObj((Tcl_WideInt)(i))
 # define Tcl_CreateObjCommand2 Tcl_CreateObjCommand
 # define TCL_OO_METHOD_VERSION_2 TCL_OO_METHOD_VERSION_CURRENT
 # undef Tcl_Size
@@ -435,7 +436,7 @@ enum IsolationLevel {
 
 /* Declarations of static functions appearing in this file */
 
-static MYSQL_BIND* MysqlBindAlloc(Tcl_Size nBindings);
+static MYSQL_BIND* MysqlBindAlloc(size_t nBindings);
 static MYSQL_BIND* MysqlBindIndex(MYSQL_BIND* b, Tcl_Size i);
 static void* MysqlBindAllocBuffer(MYSQL_BIND* b, Tcl_Size i, unsigned long len);
 static void MysqlBindFreeBuffer(MYSQL_BIND* b, Tcl_Size i);
@@ -453,7 +454,7 @@ static void TransferMysqlError(Tcl_Interp* interp, MYSQL* mysqlPtr);
 static void TransferMysqlStmtError(Tcl_Interp* interp, MYSQL_STMT* mysqlPtr);
 
 static Tcl_Obj* QueryConnectionOption(ConnectionData* cdata, Tcl_Interp* interp,
-				      int optionNum);
+				      Tcl_Size optionNum);
 static int ConfigureConnection(ConnectionData* cdata, Tcl_Interp* interp,
 			       Tcl_Size objc, Tcl_Obj *const *, Tcl_Size skip);
 static int ConnectionConstructor(void *clientData, Tcl_Interp* interp,
@@ -764,9 +765,9 @@ const static Tcl_MethodType2* ResultSetMethods[] = {
  */
 
 static MYSQL_BIND*
-MysqlBindAlloc(Tcl_Size nBindings)
+MysqlBindAlloc(size_t nBindings)
 {
-    Tcl_Size size;
+    size_t size;
     void* retval = NULL;
     if (mysqlClientAtLeast51) {
 	size = sizeof(struct st_mysql_bind_51);
@@ -1093,11 +1094,11 @@ static Tcl_Obj*
 QueryConnectionOption (
     ConnectionData* cdata,	/* Connection data */
     Tcl_Interp* interp,		/* Tcl interpreter */
-    int optionNum		/* Position of the option in the table */
+    Tcl_Size optionNum		/* Position of the option in the table */
 ) {
     MYSQL_RES* result;		/* Result of the MySQL query for the option */
     MYSQL_ROW row;		/* Row of the result set */
-    int fieldCount;		/* Number of fields in a row */
+    unsigned fieldCount;		/* Number of fields in a row */
     unsigned long* lengths;	/* Character lengths of the fields */
     Tcl_Obj* retval;		/* Return value */
 
@@ -1124,7 +1125,7 @@ QueryConnectionOption (
 	    }
 	} else {
 	    lengths = mysql_fetch_lengths(result);
-	    retval = Tcl_NewStringObj(row[1], lengths[1]);
+	    retval = Tcl_NewStringObj(row[1], (Tcl_Size)lengths[1]);
 	}
     }
     mysql_free_result(result);
@@ -1254,7 +1255,7 @@ ConfigureConnection(
 		return TCL_ERROR;
 	    }
 	    if (optionValue) {
-		mysqlFlags |= ConnOptions[optionIndex].info;
+		mysqlFlags |= (unsigned long)ConnOptions[optionIndex].info;
 	    }
 	    break;
 	case TYPE_ENCODING:
@@ -1287,7 +1288,7 @@ ConfigureConnection(
 				 "MYSQL", "-1", NULL);
 		return TCL_ERROR;
 	    }
-	    port = optionValue;
+	    port = (unsigned short)optionValue;
 	    break;
 	case TYPE_READONLY:
 	    if (Tcl_GetBooleanFromObj(interp, objv[i+1], &optionValue)
@@ -1610,11 +1611,11 @@ ConnectionColumnsMethod(
 	    }
 	    if (IS_NUM(field->type)) {
 		Tcl_DictObjPut(NULL, attrs, literals[LIT_PRECISION],
-			       Tcl_NewWideIntObj(field->length));
+			       Tcl_NewWideUIntObj(field->length));
 	    } else if (field->charsetnr < cdata->nCollations) {
 		Tcl_DictObjPut(NULL, attrs, literals[LIT_PRECISION],
-		    Tcl_NewWideIntObj(field->length
-			/ cdata->collationSizes[field->charsetnr]));
+		    Tcl_NewWideUIntObj(field->length
+			/ (unsigned)cdata->collationSizes[field->charsetnr]));
 	    }
 	    Tcl_DictObjPut(NULL, attrs, literals[LIT_SCALE],
 			   Tcl_NewWideIntObj(field->decimals));
@@ -1786,14 +1787,14 @@ ConnectionEvaldirectMethod(
     ConnectionData* cdata = (ConnectionData*)
 	Tcl_ObjectGetMetadata(thisObject, &connectionDataType);
 				/* Instance data */
-    int nColumns;		/* Number of columns in the result set */
+    unsigned nColumns;		/* Number of columns in the result set */
     MYSQL_RES* resultPtr;	/* MySQL result set */
     MYSQL_ROW rowPtr;		/* One row of the result set */
     unsigned long* lengths;	/* Lengths of the fields in a row */
     Tcl_Obj* retObj;		/* Result set as a Tcl list */
     Tcl_Obj* rowObj;		/* One row of the result set as a Tcl list */
     Tcl_Obj* fieldObj;		/* One field of the row */
-    int i;
+    unsigned i;
 
     /* Check parameters */
 
@@ -1821,7 +1822,7 @@ ConnectionEvaldirectMethod(
 	if (nColumns == 0) {
 	    Tcl_SetObjResult
 		(interp,
-		 Tcl_NewWideIntObj(mysql_affected_rows(cdata->mysqlPtr)));
+		 Tcl_NewWideUIntObj(mysql_affected_rows(cdata->mysqlPtr)));
 	    return TCL_OK;
 	} else {
 	    TransferMysqlError(interp, cdata->mysqlPtr);
@@ -1837,7 +1838,7 @@ ConnectionEvaldirectMethod(
 	lengths = mysql_fetch_lengths(resultPtr);
 	for (i = 0; i < nColumns; ++i) {
 	    if (rowPtr[i] != NULL) {
-		fieldObj = Tcl_NewStringObj(rowPtr[i], lengths[i]);
+		fieldObj = Tcl_NewStringObj(rowPtr[i], (Tcl_Size)lengths[i]);
 	    } else {
 		fieldObj = cdata->pidata->literals[LIT_EMPTY];
 	    }
@@ -2541,7 +2542,7 @@ StatementConstructor(
     Tcl_IncrRefCount(sdata->columnNames);
 
     Tcl_ListObjLength(NULL, sdata->subVars, &nParams);
-    sdata->params = (ParamData*) ckalloc(nParams * sizeof(ParamData));
+    sdata->params = (ParamData*) ckalloc((size_t)nParams * sizeof(ParamData));
     for (i = 0; i < nParams; ++i) {
 	sdata->params[i].flags = PARAM_IN;
 	sdata->params[i].dataType = MYSQL_TYPE_VARCHAR;
@@ -2969,11 +2970,11 @@ ResultSetConstructor(
     rdata->paramBindings = NULL;
     rdata->paramLengths = NULL;
     rdata->rowCount = 0;
-    rdata->resultErrors = (my_bool*) ckalloc(nColumns * sizeof(my_bool));
-    rdata->resultNulls = (my_bool*) ckalloc(nColumns * sizeof(my_bool));
+    rdata->resultErrors = (my_bool*) ckalloc((size_t)nColumns * sizeof(my_bool));
+    rdata->resultNulls = (my_bool*) ckalloc((size_t)nColumns * sizeof(my_bool));
     resultLengths = rdata->resultLengths = (unsigned long*)
-	ckalloc(nColumns * sizeof(unsigned long));
-    rdata->resultBindings = resultBindings = MysqlBindAlloc(nColumns);
+	ckalloc((size_t)nColumns * sizeof(unsigned long));
+    rdata->resultBindings = resultBindings = MysqlBindAlloc((size_t)nColumns);
     IncrStatementRefCount(sdata);
     Tcl_ObjectSetMetadata(thisObject, &resultSetDataType, rdata);
 
@@ -3050,8 +3051,8 @@ ResultSetConstructor(
     Tcl_ListObjLength(NULL, sdata->subVars, &nParams);
     rdata->paramValues = Tcl_NewObj();
     Tcl_IncrRefCount(rdata->paramValues);
-    rdata->paramBindings = MysqlBindAlloc(nParams);
-    rdata->paramLengths = (unsigned long*) ckalloc(nParams
+    rdata->paramBindings = MysqlBindAlloc((size_t)nParams);
+    rdata->paramLengths = (unsigned long*) ckalloc((size_t)nParams
 						   * sizeof(unsigned long));
     for (nBound = 0; nBound < nParams; ++nBound) {
 	MysqlBindSetBufferType(rdata->paramBindings, nBound, MYSQL_TYPE_NULL);
@@ -3168,7 +3169,7 @@ ResultSetConstructor(
 		}
 		bufPtr = (char *)MysqlBindAllocBuffer(rdata->paramBindings, nBound,
 					      (unsigned long)(len+1));
-		memcpy(bufPtr, paramValStr, len);
+		memcpy(bufPtr, paramValStr, (size_t)len);
 		rdata->paramLengths[nBound] = (unsigned long)len;
 		MysqlBindSetLength(rdata->paramBindings, nBound,
 				   &(rdata->paramLengths[nBound]));
@@ -3405,10 +3406,10 @@ ResultSetNextrowMethod(
 	    default:
 		if (field->charsetnr == 63) {
 		    colObj = Tcl_NewByteArrayObj((unsigned char*) bufPtr,
-						 resultLengths[i]);
+			    (Tcl_Size)resultLengths[i]);
 		} else {
 		    colObj = Tcl_NewStringObj((char*) bufPtr,
-					      resultLengths[i]);
+			    (Tcl_Size)resultLengths[i]);
 		}
 		break;
 	    }
@@ -3706,7 +3707,7 @@ Tdbcmysql_Init(
 	    Tcl_CreateHashEntry(&(pidata->typeNumHash),
 				INT2PTR(dataTypes[i].num),
 				&isNew);
-	Tcl_Obj* nameObj = Tcl_NewStringObj(dataTypes[i].name, -1);
+	nameObj = Tcl_NewStringObj(dataTypes[i].name, -1);
 	Tcl_IncrRefCount(nameObj);
 	Tcl_SetHashValue(entry, (void *)nameObj);
     }
