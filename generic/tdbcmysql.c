@@ -146,7 +146,7 @@ typedef struct PerInterpData {
 /*
  * Structure that carries the data for an MYSQL connection
  *
- * 	The ConnectionData structure is refcounted to simplify the
+ *	The ConnectionData structure is refcounted to simplify the
  *	destruction of statements associated with a connection.
  *	When a connection is destroyed, the subordinate namespace that
  *	contains its statements is taken down, destroying them. It's
@@ -169,7 +169,7 @@ typedef struct ConnectionData {
  */
 
 #define CONN_FLAG_AUTOCOMMIT	0x1	/* Autocommit is set */
-#define CONN_FLAG_IN_XCN	0x2 	/* Transaction is in progress */
+#define CONN_FLAG_IN_XCN	0x2	/* Transaction is in progress */
 #define CONN_FLAG_INTERACTIVE	0x4	/* -interactive requested at connect */
 
 #define IncrConnectionRefCount(x) \
@@ -189,7 +189,7 @@ typedef struct ConnectionData {
  *
  *	Just as with connections, statements need to defer taking down
  *	their client data until other objects (i.e., result sets) that
- * 	refer to them have had a chance to clean up. Hence, this
+ *	refer to them have had a chance to clean up. Hence, this
  *	structure is reference counted as well.
  */
 
@@ -238,8 +238,8 @@ typedef struct ParamData {
 } ParamData;
 
 #define PARAM_KNOWN	1<<0	/* Something is known about the parameter */
-#define PARAM_IN 	1<<1	/* Parameter is an input parameter */
-#define PARAM_OUT 	1<<2	/* Parameter is an output parameter */
+#define PARAM_IN	1<<1	/* Parameter is an input parameter */
+#define PARAM_OUT	1<<2	/* Parameter is an output parameter */
 				/* (Both bits are set if parameter is
 				 * an INOUT parameter) */
 #define PARAM_BINARY	1<<3	/* Parameter is binary */
@@ -322,7 +322,7 @@ static const MysqlDataType dataTypes[] = {
     { "binary",		MYSQL_TYPE_STRING | IS_BINARY },
     { "char",		MYSQL_TYPE_STRING },
     { "geometry",	MYSQL_TYPE_GEOMETRY },
-    { NULL, 		0 }
+    { NULL,		0 }
 };
 
 /* Configuration options for MySQL connections */
@@ -331,10 +331,10 @@ static const MysqlDataType dataTypes[] = {
 
 enum OptType {
     TYPE_STRING,		/* Arbitrary character string */
-    TYPE_FLAG, 			/* Boolean flag */
+    TYPE_FLAG,			/* Boolean flag */
     TYPE_ENCODING,		/* Encoding name */
     TYPE_ISOLATION,		/* Transaction isolation level */
-    TYPE_PORT, 			/* Port number */
+    TYPE_PORT,			/* Port number */
     TYPE_READONLY,		/* Read-only indicator */
     TYPE_TIMEOUT		/* Timeout value */
 };
@@ -368,7 +368,7 @@ static const struct {
       "SELECT '', @@SLAVE_COMPRESSED_PROTOCOL" },
     { "-database",    TYPE_STRING,    INDX_DB,		  CONN_OPT_FLAG_MOD,
       "SELECT '', DATABASE();"},
-    { "-db",	      TYPE_STRING,    INDX_DB, 		  CONN_OPT_FLAG_MOD
+    { "-db",	      TYPE_STRING,    INDX_DB,		  CONN_OPT_FLAG_MOD
 							| CONN_OPT_FLAG_ALIAS,
       "SELECT '', DATABASE()" },
     { "-encoding",    TYPE_ENCODING,  0,		  0,
@@ -794,7 +794,7 @@ MysqlBindAlloc(size_t nBindings)
 
 static MYSQL_BIND*
 MysqlBindIndex(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i			/* Index in the binding array */
 ) {
     if (mysqlClientAtLeast51) {
@@ -888,7 +888,7 @@ MysqlBindFreeBuffer(
 
 static void*
 MysqlBindGetBuffer(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i			/* Index in the binding array */
 ) {
     if (mysqlClientAtLeast51) {
@@ -900,7 +900,7 @@ MysqlBindGetBuffer(
 
 static unsigned long
 MysqlBindGetBufferLength(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i			/* Index in the binding array */
 ) {
     if (mysqlClientAtLeast51) {
@@ -913,7 +913,7 @@ MysqlBindGetBufferLength(
 
 static enum enum_field_types
 MysqlBindGetBufferType(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i			/* Index in the binding array */
 ) {
     if (mysqlClientAtLeast51) {
@@ -925,7 +925,7 @@ MysqlBindGetBufferType(
 
 static void
 MysqlBindSetBufferType(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i,			/* Index in the binding array */
     enum enum_field_types t	/* Buffer type to assign */
 ) {
@@ -938,7 +938,7 @@ MysqlBindSetBufferType(
 
 static void
 MysqlBindSetLength(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i,			/* Index in the binding array */
     unsigned long* p		/* Length pointer to assign */
 ) {
@@ -951,7 +951,7 @@ MysqlBindSetLength(
 
 static void
 MysqlBindSetIsNull(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i,			/* Index in the binding array */
     my_bool* p			/* "Is null" indicator pointer to assign */
 ) {
@@ -964,7 +964,7 @@ MysqlBindSetIsNull(
 
 static void
 MysqlBindSetError(
-    MYSQL_BIND* b, 		/* Binding array to alter */
+    MYSQL_BIND* b,		/* Binding array to alter */
     Tcl_Size i,			/* Index in the binding array */
     my_bool* p			/* Error indicator pointer to assign */
 ) {
@@ -1539,7 +1539,7 @@ ConnectionBegintransactionMethod(
  *	in the database (optionally matching a given pattern)
  *
  * Usage:
- * 	$connection columns table ?pattern?
+ *	$connection columns table ?pattern?
  *
  * Parameters:
  *	None.
@@ -1637,7 +1637,7 @@ ConnectionColumnsMethod(
  * ConnectionCommitMethod --
  *
  *	Method that requests that a pending transaction against a database
- * 	be committed.
+ *	be committed.
  *
  * Usage:
  *	$connection commit
@@ -1906,10 +1906,10 @@ ConnectionNeedCollationInfoMethod(
  * ConnectionRollbackMethod --
  *
  *	Method that requests that a pending transaction against a database
- * 	be rolled back.
+ *	be rolled back.
  *
  * Usage:
- * 	$connection rollback
+ *	$connection rollback
  *
  * Parameters:
  *	None.
@@ -2064,7 +2064,7 @@ ConnectionSetCollationInfoMethod(
  *	matching a given pattern
  *
  * Usage:
- * 	$connection tables ?pattern?
+ *	$connection tables ?pattern?
  *
  * Parameters:
  *	None.
@@ -2430,9 +2430,9 @@ StatementConstructor(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
-    Tcl_Obj *const *objv	/* Parameter vector */
-) {
+    Tcl_Size objc,			/* Parameter count */
+    Tcl_Obj *const *objv)	/* Parameter vector */
+{
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
 				/* The current statement object */
     Tcl_Size skip = Tcl_ObjectContextSkippedArgs(context);
@@ -2591,7 +2591,7 @@ StatementParamsMethod(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
+    Tcl_Size objc,			/* Parameter count */
     Tcl_Obj *const *objv	/* Parameter vector */
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
@@ -2679,9 +2679,9 @@ StatementParamtypeMethod(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
-    Tcl_Obj *const *objv	/* Parameter vector */
-) {
+    Tcl_Size objc,			/* Parameter count */
+    Tcl_Obj *const *objv)	/* Parameter vector */
+{
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
 				/* The current statement object */
     StatementData* sdata	/* The current statement */
@@ -2691,7 +2691,7 @@ StatementParamtypeMethod(
 	const char* name;
 	int flags;
     } directions[] = {
-	{ "in", 	PARAM_IN },
+	{ "in",	PARAM_IN },
 	{ "out",	PARAM_OUT },
 	{ "inout",	PARAM_IN | PARAM_OUT },
 	{ NULL,		0 }
@@ -2894,7 +2894,7 @@ ResultSetConstructor(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
+    Tcl_Size objc,			/* Parameter count */
     Tcl_Obj *const *objv	/* Parameter vector */
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);
@@ -3231,7 +3231,7 @@ ResultSetColumnsMethod(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
+    Tcl_Size objc,			/* Parameter count */
     Tcl_Obj *const *objv	/* Parameter vector */
 ) {
 
@@ -3284,7 +3284,7 @@ ResultSetNextrowMethod(
     void *clientData,	/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
+    Tcl_Size objc,			/* Parameter count */
     Tcl_Obj *const *objv	/* Parameter vector */
 ) {
 
@@ -3468,7 +3468,7 @@ ResultSetRowcountMethod(
     TCL_UNUSED(void *),		/* Not used */
     Tcl_Interp* interp,		/* Tcl interpreter */
     Tcl_ObjectContext context,	/* Object context  */
-    Tcl_Size objc, 			/* Parameter count */
+    Tcl_Size objc,		/* Parameter count */
     Tcl_Obj *const *objv	/* Parameter vector */
 ) {
     Tcl_Object thisObject = Tcl_ObjectContextObject(context);

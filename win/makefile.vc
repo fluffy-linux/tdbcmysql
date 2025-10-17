@@ -73,7 +73,7 @@ TDBC_LIB_FILE	 = tdbc$(TDBC_VERSION)$(SUFX).dll
 TDBCSTUBLIBNAME	 = tdbcstub.lib
 TDBC_LIB_FILE	 = tcl9tdbc$(TDBC_VERSION).dll
 !endif
-TDBCSTUBLIB 	 = $(TDBC_DIR)\win\$(BUILDDIRTOP)\$(TDBCSTUBLIBNAME)
+TDBCSTUBLIB	 = $(TDBC_DIR)\win\$(BUILDDIRTOP)\$(TDBCSTUBLIBNAME)
 TDBC_BIN_DIR     = $(TDBC_DIR)/win/$(BUILDDIRTOP)
 
 PRJ_INCLUDES	= -I"$(TDBC_GENERIC_DIR)"
@@ -112,15 +112,15 @@ $(TMP_DIR)\tdbcMysqlUuid.h:	$(ROOT)\manifest.uuid
 .PHONY: $(OUT_DIR)\tdbcConfig.sh
 
 test: setup $(PROJECT)
-        @set TCL_LIBRARY=$(TCL_LIBRARY:\=/)
-        @set TCLLIBPATH=$(OUT_DIR_PATH:\=/)
+	@set TCL_LIBRARY=$(TCL_LIBRARY:\=/)
+	@set TCLLIBPATH=$(OUT_DIR_PATH:\=/)
 	@set TDBC_LIBRARY=$(LIBDIR:\=/)
 	@$(CPY) $(LIBDIR)\*.tcl $(OUT_DIR)
 !if $(TCLINSTALL)
-        @set PATH=$(_TCLDIR)\bin;$(PATH)
+	@set PATH=$(_TCLDIR)\bin;$(PATH)
 	$(DEBUGGER) $(TCLSH) "$(ROOT:\=/)/tests/all.tcl" $(TESTFLAGS)
 !else
-        @set PATH=$(_TCLDIR)\win\$(BUILDDIRTOP);$(PATH)
+	@set PATH=$(_TCLDIR)\win\$(BUILDDIRTOP);$(PATH)
 	$(DEBUGGER) $(TCLSH) "$(ROOT:\=/)/tests/all.tcl" $(TESTFLAGS) \
 		-load "package ifneeded tdbc::mysql $(DOTVERSION) \
 			{source {$(LIBDIR:\=/)/tdbcmysql.tcl};load {$(PRJLIB:\=/)} [string totitle $(PROJECT)]};\

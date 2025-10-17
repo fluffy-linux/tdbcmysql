@@ -16,7 +16,7 @@
 
 	* configure.in:
 	* README:	Advanced version number to 1.0.1.
-	* configure: 	autoconf 2.68
+	* configure	autoconf 2.68
 
 2012-11-15  KevinB. Kenny  <kennykb@acm.org>
 
@@ -29,7 +29,7 @@
 
 	* configure.in:
 	* README:	Advanced version number to 1.0.0.
-	* configure: 	autoconf 2.59
+	* configure:	autoconf 2.59
 
 2012-07-26  Jan Nijtmans  <jan.nijtmans@gmail.com>
 
@@ -72,7 +72,7 @@
 	* Makefile.in:
 	* README:	Advanced version number to 1.0b17.
 
-	* configure: 	autoconf 2.59
+	* configure:	autoconf 2.59
 
 2011-07-18  Don Porter  <dgp@users.sourceforge.net>
 
@@ -150,7 +150,7 @@
 			at configure time, rather than from the Makefile.)
 			Advanced version number to 1.0b16.
 
-	* configure: 	autoconf 2.59
+	* configure:	autoconf 2.59
 
 2010-06-19  Kevin B. Kenny  <kennykb@acm.org>
 
