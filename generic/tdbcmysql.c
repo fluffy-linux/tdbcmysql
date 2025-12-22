@@ -768,7 +768,7 @@ static MYSQL_BIND*
 MysqlBindAlloc(size_t nBindings)
 {
     size_t size;
-    void* retval = NULL;
+    void *retval = NULL;
     if (mysqlClientAtLeast51) {
 	size = sizeof(struct st_mysql_bind_51);
     } else {
@@ -776,7 +776,7 @@ MysqlBindAlloc(size_t nBindings)
     }
     size *= nBindings;
     if (size != 0) {
-	retval = ckalloc(size);
+	retval = Tcl_Alloc(size);
 	memset(retval, 0, size);
     }
     return (MYSQL_BIND*) retval;
@@ -823,9 +823,9 @@ MysqlBindAllocBuffer(
     Tcl_Size i,			/* Index into the array */
     unsigned long len		/* Length of the buffer to allocate or 0 */
 ) {
-    void* block = NULL;
+    void *block = NULL;
     if (len != 0) {
-	block = ckalloc(len);
+	block = Tcl_Alloc(len);
     }
     if (mysqlClientAtLeast51) {
 	((struct st_mysql_bind_51*) b)[i].buffer = block;
@@ -860,14 +860,14 @@ MysqlBindFreeBuffer(
     if (mysqlClientAtLeast51) {
 	struct st_mysql_bind_51* bindings = (struct st_mysql_bind_51*) b;
 	if (bindings[i].buffer) {
-	    ckfree(bindings[i].buffer);
+	    Tcl_Free(bindings[i].buffer);
 	    bindings[i].buffer = NULL;
 	}
 	bindings[i].buffer_length = 0;
     } else {
 	struct st_mysql_bind_50* bindings = (struct st_mysql_bind_50*) b;
 	if (bindings[i].buffer) {
-	    ckfree(bindings[i].buffer);
+	    Tcl_Free(bindings[i].buffer);
 	    bindings[i].buffer = NULL;
 	}
 	bindings[i].buffer_length = 0;
@@ -1446,7 +1446,7 @@ ConnectionConstructor(
 
     /* Hang client data on this connection */
 
-    cdata = (ConnectionData*) ckalloc(sizeof(ConnectionData));
+    cdata = (ConnectionData*)Tcl_Alloc(sizeof(ConnectionData));
     cdata->refCount = 1;
     cdata->pidata = pidata;
     cdata->mysqlPtr = NULL;
@@ -2020,10 +2020,10 @@ ConnectionSetCollationInfoMethod(
     }
     cdata->nCollations = (unsigned int)(t+1);
     if (cdata->collationSizes) {
-	ckfree((char*) cdata->collationSizes);
+	Tcl_Free((char*) cdata->collationSizes);
     }
     cdata->collationSizes =
-	(int*) ckalloc(cdata->nCollations * sizeof(int));
+	(int*)Tcl_Alloc(cdata->nCollations * sizeof(int));
     memset(cdata->collationSizes, 0, cdata->nCollations * sizeof(int));
     for (i = 2; i < objc; ++i) {
 	if (Tcl_ListObjLength(interp, objv[i], &listLen) != TCL_OK) {
@@ -2216,13 +2216,13 @@ DeleteConnection(
     ConnectionData* cdata	/* Instance data for the connection */
 ) {
     if (cdata->collationSizes != NULL) {
-	ckfree((char*) cdata->collationSizes);
+	Tcl_Free((char*) cdata->collationSizes);
     }
     if (cdata->mysqlPtr != NULL) {
 	mysql_close(cdata->mysqlPtr);
     }
     DecrPerInterpRefCount(cdata->pidata);
-    ckfree((char*) cdata);
+    Tcl_Free((char*) cdata);
 }
 
 /*
@@ -2272,7 +2272,7 @@ static StatementData*
 NewStatement(
     ConnectionData* cdata	/* Instance data for the connection */
 ) {
-    StatementData* sdata = (StatementData*) ckalloc(sizeof(StatementData));
+    StatementData* sdata = (StatementData*)Tcl_Alloc(sizeof(StatementData));
     sdata->refCount = 1;
     sdata->cdata = cdata;
     IncrConnectionRefCount(cdata);
@@ -2542,7 +2542,7 @@ StatementConstructor(
     Tcl_IncrRefCount(sdata->columnNames);
 
     Tcl_ListObjLength(NULL, sdata->subVars, &nParams);
-    sdata->params = (ParamData*) ckalloc((size_t)nParams * sizeof(ParamData));
+    sdata->params = (ParamData*)Tcl_Alloc((size_t)nParams * sizeof(ParamData));
     for (i = 0; i < nParams; ++i) {
 	sdata->params[i].flags = PARAM_IN;
 	sdata->params[i].dataType = MYSQL_TYPE_VARCHAR;
@@ -2829,11 +2829,11 @@ DeleteStatement(
 	Tcl_DecrRefCount(sdata->nativeSql);
     }
     if (sdata->params != NULL) {
-	ckfree((char*)sdata->params);
+	Tcl_Free((char*)sdata->params);
     }
     Tcl_DecrRefCount(sdata->subVars);
     DecrConnectionRefCount(sdata->cdata);
-    ckfree((char*)sdata);
+    Tcl_Free((char*)sdata);
 }
 
 /*
@@ -2962,7 +2962,7 @@ ResultSetConstructor(
 
     /* Allocate an object to hold data about this result set */
 
-    rdata = (ResultSetData*) ckalloc(sizeof(ResultSetData));
+    rdata = (ResultSetData*)Tcl_Alloc(sizeof(ResultSetData));
     rdata->refCount = 1;
     rdata->sdata = sdata;
     rdata->stmtPtr = NULL;
@@ -2970,10 +2970,10 @@ ResultSetConstructor(
     rdata->paramBindings = NULL;
     rdata->paramLengths = NULL;
     rdata->rowCount = 0;
-    rdata->resultErrors = (my_bool*) ckalloc((size_t)nColumns * sizeof(my_bool));
-    rdata->resultNulls = (my_bool*) ckalloc((size_t)nColumns * sizeof(my_bool));
+    rdata->resultErrors = (my_bool *)Tcl_Alloc((size_t)nColumns * sizeof(my_bool));
+    rdata->resultNulls = (my_bool *)Tcl_Alloc((size_t)nColumns * sizeof(my_bool));
     resultLengths = rdata->resultLengths = (unsigned long*)
-	ckalloc((size_t)nColumns * sizeof(unsigned long));
+	Tcl_Alloc((size_t)nColumns * sizeof(unsigned long));
     rdata->resultBindings = resultBindings = MysqlBindAlloc((size_t)nColumns);
     IncrStatementRefCount(sdata);
     Tcl_ObjectSetMetadata(thisObject, &resultSetDataType, rdata);
@@ -3052,7 +3052,7 @@ ResultSetConstructor(
     rdata->paramValues = Tcl_NewObj();
     Tcl_IncrRefCount(rdata->paramValues);
     rdata->paramBindings = MysqlBindAlloc((size_t)nParams);
-    rdata->paramLengths = (unsigned long*) ckalloc((size_t)nParams
+    rdata->paramLengths = (unsigned long *)Tcl_Alloc((size_t)nParams
 						   * sizeof(unsigned long));
     for (nBound = 0; nBound < nParams; ++nBound) {
 	MysqlBindSetBufferType(rdata->paramBindings, nBound, MYSQL_TYPE_NULL);
@@ -3518,11 +3518,11 @@ DeleteResultSet(
     for (i = 0; i < nColumns; ++i) {
 	MysqlBindFreeBuffer(rdata->resultBindings, i);
     }
-    ckfree((char*)(rdata->resultBindings));
-    ckfree((char*)(rdata->resultLengths));
-    ckfree((char*)(rdata->resultNulls));
-    ckfree((char*)(rdata->resultErrors));
-    ckfree((char*)(rdata->paramLengths));
+    Tcl_Free((char*)(rdata->resultBindings));
+    Tcl_Free((char*)(rdata->resultLengths));
+    Tcl_Free((char*)(rdata->resultNulls));
+    Tcl_Free((char*)(rdata->resultErrors));
+    Tcl_Free((char*)(rdata->paramLengths));
     if (rdata->paramBindings != NULL) {
 	for (i = 0; i < nParams; ++i) {
 	    if (MysqlBindGetBufferType(rdata->paramBindings, i)
@@ -3530,7 +3530,7 @@ DeleteResultSet(
 		MysqlBindFreeBuffer(rdata->paramBindings, i);
 	    }
 	}
-	ckfree((char*)(rdata->paramBindings));
+	Tcl_Free((char*)(rdata->paramBindings));
     }
     if (rdata->paramValues != NULL) {
 	Tcl_DecrRefCount(rdata->paramValues);
@@ -3543,7 +3543,7 @@ DeleteResultSet(
 	}
     }
     DecrStatementRefCount(rdata->sdata);
-    ckfree((char*)rdata);
+    Tcl_Free((char*)rdata);
 }
 
 /*
@@ -3694,7 +3694,7 @@ Tdbcmysql_Init(
      * Create per-interpreter data for the package
      */
 
-    pidata = (PerInterpData*) ckalloc(sizeof(PerInterpData));
+    pidata = (PerInterpData*)Tcl_Alloc(sizeof(PerInterpData));
     pidata->refCount = 1;
     for (i = 0; i < LIT__END; ++i) {
 	pidata->literals[i] = Tcl_NewStringObj(LiteralValues[i], -1);
@@ -3874,7 +3874,7 @@ DeletePerInterpData(
     for (i = 0; i < LIT__END; ++i) {
 	Tcl_DecrRefCount(pidata->literals[i]);
     }
-    ckfree((char *) pidata);
+    Tcl_Free((char *) pidata);
 
     /*
      * TODO: decrease thread refcount and mysql_thread_end if need be
