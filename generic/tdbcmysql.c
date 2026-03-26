@@ -543,7 +543,7 @@ static void DeletePerInterpData(PerInterpData* pidata);
 
 /* Metadata type that holds connection data */
 
-const static Tcl_ObjectMetadataType connectionDataType = {
+static const Tcl_ObjectMetadataType connectionDataType = {
     TCL_OO_METADATA_VERSION_CURRENT,
 				/* version */
     "ConnectionData",		/* name */
@@ -554,7 +554,7 @@ const static Tcl_ObjectMetadataType connectionDataType = {
 
 /* Metadata type that holds statement data */
 
-const static Tcl_ObjectMetadataType statementDataType = {
+static const Tcl_ObjectMetadataType statementDataType = {
     TCL_OO_METADATA_VERSION_CURRENT,
 				/* version */
     "StatementData",		/* name */
@@ -565,7 +565,7 @@ const static Tcl_ObjectMetadataType statementDataType = {
 
 /* Metadata type for result set data */
 
-const static Tcl_ObjectMetadataType resultSetDataType = {
+static const Tcl_ObjectMetadataType resultSetDataType = {
     TCL_OO_METADATA_VERSION_CURRENT,
 				/* version */
     "ResultSetData",		/* name */
@@ -576,7 +576,7 @@ const static Tcl_ObjectMetadataType resultSetDataType = {
 
 /* Method types of the connection methods that are implemented in C */
 
-const static Tcl_MethodType2 ConnectionConstructorType = {
+static const Tcl_MethodType2 ConnectionConstructorType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "CONSTRUCTOR",		/* name */
@@ -585,7 +585,7 @@ const static Tcl_MethodType2 ConnectionConstructorType = {
     CloneCmd			/* cloneProc */
 };
 
-const static Tcl_MethodType2 ConnectionBegintransactionMethodType = {
+static const Tcl_MethodType2 ConnectionBegintransactionMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "begintransaction",		/* name */
@@ -593,7 +593,7 @@ const static Tcl_MethodType2 ConnectionBegintransactionMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionColumnsMethodType = {
+static const Tcl_MethodType2 ConnectionColumnsMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "Columns",			/* name */
@@ -601,7 +601,7 @@ const static Tcl_MethodType2 ConnectionColumnsMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionCommitMethodType = {
+static const Tcl_MethodType2 ConnectionCommitMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "commit",			/* name */
@@ -609,7 +609,7 @@ const static Tcl_MethodType2 ConnectionCommitMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionConfigureMethodType = {
+static const Tcl_MethodType2 ConnectionConfigureMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "configure",		/* name */
@@ -617,7 +617,7 @@ const static Tcl_MethodType2 ConnectionConfigureMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionEvaldirectMethodType = {
+static const Tcl_MethodType2 ConnectionEvaldirectMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "evaldirect",		/* name */
@@ -625,7 +625,7 @@ const static Tcl_MethodType2 ConnectionEvaldirectMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionNeedCollationInfoMethodType = {
+static const Tcl_MethodType2 ConnectionNeedCollationInfoMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "NeedCollationInfo",	/* name */
@@ -633,7 +633,7 @@ const static Tcl_MethodType2 ConnectionNeedCollationInfoMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionRollbackMethodType = {
+static const Tcl_MethodType2 ConnectionRollbackMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "rollback",			/* name */
@@ -641,7 +641,7 @@ const static Tcl_MethodType2 ConnectionRollbackMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionSetCollationInfoMethodType = {
+static const Tcl_MethodType2 ConnectionSetCollationInfoMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "SetCollationInfo",		/* name */
@@ -649,7 +649,7 @@ const static Tcl_MethodType2 ConnectionSetCollationInfoMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ConnectionTablesMethodType = {
+static const Tcl_MethodType2 ConnectionTablesMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "tables",			/* name */
@@ -658,7 +658,7 @@ const static Tcl_MethodType2 ConnectionTablesMethodType = {
     NULL			/* cloneProc */
 };
 
-const static Tcl_MethodType2* ConnectionMethods[] = {
+static const Tcl_MethodType2* ConnectionMethods[] = {
     &ConnectionBegintransactionMethodType,
     &ConnectionColumnsMethodType,
     &ConnectionCommitMethodType,
@@ -673,7 +673,7 @@ const static Tcl_MethodType2* ConnectionMethods[] = {
 
 /* Method types of the statement methods that are implemented in C */
 
-const static Tcl_MethodType2 StatementConstructorType = {
+static const Tcl_MethodType2 StatementConstructorType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "CONSTRUCTOR",		/* name */
@@ -681,7 +681,7 @@ const static Tcl_MethodType2 StatementConstructorType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 StatementParamsMethodType = {
+static const Tcl_MethodType2 StatementParamsMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "params",			/* name */
@@ -689,7 +689,7 @@ const static Tcl_MethodType2 StatementParamsMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 StatementParamtypeMethodType = {
+static const Tcl_MethodType2 StatementParamtypeMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "paramtype",		/* name */
@@ -702,7 +702,7 @@ const static Tcl_MethodType2 StatementParamtypeMethodType = {
  * Methods to create on the statement class.
  */
 
-const static Tcl_MethodType2* StatementMethods[] = {
+static const Tcl_MethodType2* StatementMethods[] = {
     &StatementParamsMethodType,
     &StatementParamtypeMethodType,
     NULL
@@ -710,7 +710,7 @@ const static Tcl_MethodType2* StatementMethods[] = {
 
 /* Method types of the result set methods that are implemented in C */
 
-const static Tcl_MethodType2 ResultSetConstructorType = {
+static const Tcl_MethodType2 ResultSetConstructorType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "CONSTRUCTOR",		/* name */
@@ -718,14 +718,14 @@ const static Tcl_MethodType2 ResultSetConstructorType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ResultSetColumnsMethodType = {
+static const Tcl_MethodType2 ResultSetColumnsMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */    "columns",			/* name */
     ResultSetColumnsMethod,	/* callProc */
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ResultSetNextrowMethodType = {
+static const Tcl_MethodType2 ResultSetNextrowMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "nextrow",			/* name */
@@ -733,7 +733,7 @@ const static Tcl_MethodType2 ResultSetNextrowMethodType = {
     NULL,			/* deleteProc */
     NULL			/* cloneProc */
 };
-const static Tcl_MethodType2 ResultSetRowcountMethodType = {
+static const Tcl_MethodType2 ResultSetRowcountMethodType = {
     TCL_OO_METHOD_VERSION_2,
 				/* version */
     "rowcount",			/* name */
@@ -745,7 +745,7 @@ const static Tcl_MethodType2 ResultSetRowcountMethodType = {
 
 /* Methods to create on the result set class */
 
-const static Tcl_MethodType2* ResultSetMethods[] = {
+static const Tcl_MethodType2* ResultSetMethods[] = {
     &ResultSetColumnsMethodType,
     &ResultSetRowcountMethodType,
     NULL
