@@ -81,6 +81,44 @@ AC_DEFUN([TEAX_LINK_LINE], [
     ])
     AC_SUBST($1)])
 
+dnl Compile in an absolute path to the client library, which is what
+dnl MysqlInitStubs() tries before searching by bare name.  Needed on macOS,
+dnl where dlopen() searches neither /opt/homebrew/lib nor /usr/local/lib, and
+dnl where DYLD_LIBRARY_PATH is stripped from hardened processes.
+dnl Must be called after TEA_CONFIG_CFLAGS, which sets SHLIB_SUFFIX.
+AC_DEFUN([TEAX_MYSQL_CLIENT_LIBRARY], [
+    AC_ARG_WITH([mysql-library],
+	AS_HELP_STRING([--with-mysql-library=FILE],
+	    [absolute path of the MySQL or MariaDB client library to try
+	     first at run time; "no" to disable, default is to search]),
+	[teax_mysql_lib=$withval], [teax_mysql_lib=auto])
+    AS_CASE([$teax_mysql_lib],
+	[no], [teax_mysql_lib=""],
+	[auto|yes], [
+	    AC_MSG_CHECKING([for a client library to compile in])
+	    teax_mysql_lib=""
+	    for teax_dir in ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/lib} \
+		    /opt/homebrew/lib /usr/local/lib /opt/local/lib \
+		    /usr/local/mysql/lib ; do
+		for teax_stem in mysqlclient mariadb ; do
+		    for teax_try in "$teax_dir/lib$teax_stem$SHLIB_SUFFIX" \
+			    "$teax_dir/lib$teax_stem".*"$SHLIB_SUFFIX" ; do
+			AS_IF([test -f "$teax_try"], [
+			    teax_mysql_lib=$teax_try
+			    break 3])
+		    done
+		done
+	    done
+	    AS_IF([test -n "$teax_mysql_lib"],
+		[AC_MSG_RESULT([$teax_mysql_lib])],
+		[AC_MSG_RESULT([none, will search by name at run time])])],
+	[*], [
+	    AS_IF([test -f "$teax_mysql_lib"], [],
+		[AC_MSG_ERROR([no such file: $teax_mysql_lib])])])
+    AS_IF([test -n "$teax_mysql_lib"], [
+	AC_DEFINE_UNQUOTED([MYSQL_CLIENT_LIBRARY], ["$teax_mysql_lib"],
+	    [Client library to load before searching by name.])])])
+
 dnl Local Variables:
 dnl mode: autoconf
 dnl End:

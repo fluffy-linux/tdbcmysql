@@ -44,7 +44,8 @@ static const char *const mysqlStubLibNames[] = {
 /* ABI Version numbers of the MySQL API that we can cope with */
 
 static const char mysqlSuffixes[][4] = {
-    "", ".3", ".21", ".20", ".19", ".18", ".17", ".16", ".15"
+    "", ".3",
+    ".24", ".23", ".22", ".21", ".20", ".19", ".18", ".17", ".16", ".15"
 };
 
 /* Names of the functions that we need from MySQL */
@@ -144,18 +145,32 @@ MysqlInitStubs(Tcl_Interp* interp)
     /* Walk the list of possible library names to find an MySQL client */
 
     status = TCL_ERROR;
+#ifdef MYSQL_CLIENT_LIBRARY
+    path = Tcl_NewStringObj(MYSQL_CLIENT_LIBRARY, -1);
+    Tcl_IncrRefCount(path);
+    Tcl_ResetResult(interp);
+    status = Tcl_LoadFile(interp, path, mysqlSymbolNames, 0,
+			  &mysqlStubsTable, &handle);
+    if (status != TCL_OK) {
+	Tcl_DecrRefCount(path);
+    }
+#endif
+
     for (i = 0; status == TCL_ERROR && mysqlStubLibNames[i] != NULL; ++i) {
 	for (j = 0; status == TCL_ERROR && (j < sizeof(mysqlSuffixes)/sizeof(mysqlSuffixes[0])); ++j) {
 	    path = Tcl_NewStringObj(LIBPREFIX, -1);
 	    Tcl_AppendToObj(path, mysqlStubLibNames[i], -1);
-#ifdef __CYGWIN__
+#if defined(__CYGWIN__)
 	    if (*mysqlSuffixes[j]) {
 		Tcl_AppendToObj(path, "-", -1);
 		Tcl_AppendToObj(path, mysqlSuffixes[j]+1, -1);
 	    }
-#endif
 	    Tcl_AppendObjToObj(path, shlibext);
-#ifndef __CYGWIN__
+#elif defined(__APPLE__)
+	    Tcl_AppendToObj(path, mysqlSuffixes[j], -1);
+	    Tcl_AppendObjToObj(path, shlibext);
+#else
+	    Tcl_AppendObjToObj(path, shlibext);
 	    Tcl_AppendToObj(path, mysqlSuffixes[j], -1);
 #endif
 	    Tcl_IncrRefCount(path);
