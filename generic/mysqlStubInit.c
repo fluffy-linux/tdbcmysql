@@ -145,6 +145,17 @@ MysqlInitStubs(Tcl_Interp* interp)
     /* Walk the list of possible library names to find an MySQL client */
 
     status = TCL_ERROR;
+#ifdef MYSQL_CLIENT_LIBRARY
+    path = Tcl_NewStringObj(MYSQL_CLIENT_LIBRARY, -1);
+    Tcl_IncrRefCount(path);
+    Tcl_ResetResult(interp);
+    status = Tcl_LoadFile(interp, path, mysqlSymbolNames, 0,
+			  &mysqlStubsTable, &handle);
+    if (status != TCL_OK) {
+	Tcl_DecrRefCount(path);
+    }
+#endif
+
     for (i = 0; status == TCL_ERROR && mysqlStubLibNames[i] != NULL; ++i) {
 	for (j = 0; status == TCL_ERROR && (j < sizeof(mysqlSuffixes)/sizeof(mysqlSuffixes[0])); ++j) {
 	    path = Tcl_NewStringObj(LIBPREFIX, -1);
