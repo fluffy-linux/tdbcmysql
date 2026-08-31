@@ -44,7 +44,8 @@ static const char *const mysqlStubLibNames[] = {
 /* ABI Version numbers of the MySQL API that we can cope with */
 
 static const char mysqlSuffixes[][4] = {
-    "", ".3", ".21", ".20", ".19", ".18", ".17", ".16", ".15"
+    "", ".3",
+    ".24", ".23", ".22", ".21", ".20", ".19", ".18", ".17", ".16", ".15"
 };
 
 /* Names of the functions that we need from MySQL */
